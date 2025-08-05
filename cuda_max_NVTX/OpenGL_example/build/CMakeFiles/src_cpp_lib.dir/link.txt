@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsrc_cpp_lib.a CMakeFiles/src_cpp_lib.dir/src/glob_var.cpp.o CMakeFiles/src_cpp_lib.dir/src/init.cpp.o CMakeFiles/src_cpp_lib.dir/src/main.cpp.o CMakeFiles/src_cpp_lib.dir/src/shaders.cpp.o CMakeFiles/src_cpp_lib.dir/src/utils.cpp.o CMakeFiles/src_cpp_lib.dir/src/window.cpp.o
+/usr/bin/ranlib libsrc_cpp_lib.a
