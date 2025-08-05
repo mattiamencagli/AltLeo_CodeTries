@@ -11,7 +11,7 @@ fi
 
 # Avvia il lettore (OpenGL) in background
 echo "Avvio il receiver (OpenGL)..."
-./receiver &
+./receiver.x &
 READER_PID=$!
 
 # Aspetta un attimo che il server Qt sia pronto
@@ -22,7 +22,7 @@ done
 
 # Ora avvia il sender (CUDA)
 echo "Avvio il sender (CUDA)..."
-./sender
+./sender.x
 
 # Attendi che il lettore finisca
 wait $READER_PID

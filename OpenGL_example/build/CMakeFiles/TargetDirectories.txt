@@ -1,4 +1,0 @@
-/home/pcaapp/Documents/codicelli_mia/OpenGL_example/build/CMakeFiles/src_cpp_lib.dir
-/home/pcaapp/Documents/codicelli_mia/OpenGL_example/build/CMakeFiles/main.dir
-/home/pcaapp/Documents/codicelli_mia/OpenGL_example/build/CMakeFiles/edit_cache.dir
-/home/pcaapp/Documents/codicelli_mia/OpenGL_example/build/CMakeFiles/rebuild_cache.dir

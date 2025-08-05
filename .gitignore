@@ -1,0 +1,6 @@
+a.out
+*.x
+*.sqlite
+*.nsys-rep
+build/
+.vscode/
