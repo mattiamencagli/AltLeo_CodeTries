@@ -47,6 +47,7 @@ protected:
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        printf("OpenGL Context Info: %s, %s, %s", glGetString(GL_VERSION), glGetString(GL_VENDOR), glGetString(GL_RENDERER));
 
         // Registra il buffer con CUDA
         CUDA_SAFE_CALL(cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsReadOnly));
