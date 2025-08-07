@@ -1,5 +1,7 @@
 a.out
 *.x
+*.o
+*.moc
 *.sqlite
 *.nsys-rep
 build/
