@@ -1,13 +1,14 @@
+#clean
+rm -f .sender.moc receiver.x sender.x
+
 # sender
-nvcc -c cuda_kernels.cu -o .cuda_kernels.o
-moc sender.cpp -o .sender.moc
-g++ sender.cpp .cuda_kernels.o -o sender.x \
-    -fPIC -std=c++17 -lGL -lcuda -lcudart \
-    `pkg-config --cflags --libs Qt5Widgets Qt5Network Qt5Gui Qt5Core`
+moc sender.cu -o .sender.moc
+nvcc sender.cu -o sender.x \
+    `pkg-config --cflags --libs Qt5Widgets Qt5Network Qt5Gui Qt5Core` \
+    -Xcompiler -fPIC -std=c++17
 
 # receiver
-moc receiver.cpp -o .receiver.moc
 g++ receiver.cpp -o receiver.x \
-    -lQt5Widgets -lGL -lGLU -lpthread -fPIC -lcuda -lcudart -std=c++17 -lGL \
+    -lQt5Widgets -lGL -lGLU -lpthread -fPIC -lcuda -lcudart -std=c++17 \
     `pkg-config --cflags --libs Qt5Widgets Qt5Network Qt5Gui Qt5Core` 
 
