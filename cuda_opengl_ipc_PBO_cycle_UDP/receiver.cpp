@@ -3,21 +3,8 @@
 #include <QOpenGLFunctions>
 #include <QUdpSocket>
 #include <QCloseEvent>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <cuda_gl_interop.h>
-#include <iostream>
 
-#define WIDTH 1024
-#define HEIGHT 1024
-
-#define CUDA_SAFE_CALL(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line) {
-    if (code != cudaSuccess) {
-        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-        exit(code);
-    }
-}
+#include "global_include.h"
 
 #define GL_SAFE_CALL(ans) { OpenGlAssert((ans), __FILE__, __LINE__); }
 inline void OpenGlAssert(GLenum code, const char *file, int line) {
@@ -47,7 +34,8 @@ protected:
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        printf("OpenGL Context Info: %s, %s, %s", glGetString(GL_VERSION), glGetString(GL_VENDOR), glGetString(GL_RENDERER));
+        std::cout << "OpenGL Context Info: " << glGetString(GL_VERSION) << ", " << glGetString(GL_VENDOR) 
+                  << ", " << glGetString(GL_RENDERER) << std::endl;
 
         // Registra il buffer con CUDA
         CUDA_SAFE_CALL(cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsReadOnly));
@@ -59,22 +47,29 @@ protected:
         // Mappa risorsa PBO
         CUDA_SAFE_CALL(cudaGraphicsMapResources(1, &cudaPboResource, 0));
         unsigned char* pboPtr;
-        size_t size;
-        CUDA_SAFE_CALL(cudaGraphicsResourceGetMappedPointer((void**)&pboPtr, &size, cudaPboResource));
+        size_t size_rcv;
+        CUDA_SAFE_CALL(cudaGraphicsResourceGetMappedPointer((void**)&pboPtr, &size_rcv, cudaPboResource));
+        if (size != size_rcv){
+            std::cerr << "Different sizes.\n";
+            exit;
+        }
 
         // Copia da handle IPC al buffer OpenGL
         CUDA_SAFE_CALL(cudaMemcpy(pboPtr, d_matrix, size, cudaMemcpyDeviceToDevice));
         CUDA_SAFE_CALL(cudaGraphicsUnmapResources(1, &cudaPboResource, 0));
 
-        // unsigned char* dbg_val_receiver = new unsigned char[10];
-        // unsigned char* host_buf = new unsigned char[size];
-        // cudaMemcpy(dbg_val_receiver, d_matrix, 10, cudaMemcpyDeviceToHost);
-        // cudaMemcpy(host_buf, pboPtr, size, cudaMemcpyDeviceToHost);
-        // for (int i = 0; i < 10; ++i) {
-        //     std::cout << "pboPtr[" << i << "] = " << (int)host_buf[i] << "d_matrix[" << i << "] = " << (int)dbg_val_receiver[i] << std::endl;
-        // }
-        // delete[] host_buf;
-        // delete[] dbg_val_receiver;
+        #ifdef DEBUG
+            unsigned char* dbg_val_receiver = new unsigned char[10];
+            unsigned char* host_buf = new unsigned char[10];
+            cudaMemcpy(dbg_val_receiver, d_matrix, 10, cudaMemcpyDeviceToHost);
+            cudaMemcpy(host_buf, pboPtr, 10, cudaMemcpyDeviceToHost);
+            for (int i = 0; i < 3; ++i) {
+                std::cout << "RECEIVER - pboPtr[" << i << "] = " << (int)host_buf[i] << "; d_matrix[" << i << "] = " 
+                        << (int)dbg_val_receiver[i] << std::endl;
+            }
+            delete[] host_buf;
+            delete[] dbg_val_receiver;
+        #endif
 
         // Rendering da PBO
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
@@ -148,7 +143,6 @@ int main(int argc, char *argv[]) {
             QByteArray datagram;
             datagram.resize(udpSocket.pendingDatagramSize());
             udpSocket.readDatagram(datagram.data(), datagram.size());
-
             if (datagram == "FRAME_READY") {
                 renderer.triggerUpdate();
             }

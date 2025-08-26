@@ -2,20 +2,8 @@
 #include <QUdpSocket>
 #include <QTimer>
 #include <QHostAddress>
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-#include <iostream>
 
-#define WIDTH 1024
-#define HEIGHT 1024
-
-#define CUDA_SAFE_CALL(ans) { gpuAssert((ans), __FILE__, __LINE__); }
-inline void gpuAssert(cudaError_t code, const char *file, int line) {
-    if (code != cudaSuccess) {
-        fprintf(stderr, "GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-        exit(code);
-    }
-}
+#include "global_include.h"
 
 __global__ void fill_matrix(unsigned char* data, int width, int height, int frame, int speed) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -59,12 +47,17 @@ public slots:
 
         dim3 block(16, 16);
         dim3 grid((WIDTH + block.x - 1) / block.x, (HEIGHT + block.y - 1) / block.y);
-        fill_matrix<<<grid, block>>>(d_working, WIDTH, HEIGHT, frame, 1);
+        fill_matrix<<<grid, block>>>(d_working, WIDTH, HEIGHT, frame, 4);
         CUDA_SAFE_CALL(cudaGetLastError());
         CUDA_SAFE_CALL(cudaDeviceSynchronize());
 
-        unsigned char h_debug;
-        cudaMemcpy(&h_debug, d_working, 1, cudaMemcpyDeviceToHost);
+        #ifdef DEBUG
+            unsigned char* h_debug = new unsigned char[10];
+            cudaMemcpy(h_debug, d_working, 10, cudaMemcpyDeviceToHost);
+            for (int i = 0; i < 3; ++i) {
+                std::cout << "SENDER - h_debug[" << i << "] = " << (int)h_debug[i] << std::endl;
+            }
+        #endif
 
         CUDA_SAFE_CALL(cudaMemcpy(d_framesend, d_working, size, cudaMemcpyDeviceToDevice));
 
