@@ -6,14 +6,6 @@
 
 #include "global_include.h"
 
-#define GL_SAFE_CALL(ans) { OpenGlAssert((ans), __FILE__, __LINE__); }
-inline void OpenGlAssert(GLenum code, const char *file, int line) {
-    if (code != GL_NO_ERROR) {
-        std::cerr << "OpenGlAssert: " << std::hex << code << " " << file << " " << line << std::endl;
-        exit(code);
-    }
-}
-
 class Renderer : public QOpenGLWidget, protected QOpenGLFunctions {
 public:
     void setCudaPointer(unsigned char* ptr) {d_matrix = ptr;}
@@ -61,8 +53,8 @@ protected:
         #ifdef DEBUG
             unsigned char* dbg_val_receiver = new unsigned char[10];
             unsigned char* host_buf = new unsigned char[10];
-            cudaMemcpy(dbg_val_receiver, d_matrix, 10, cudaMemcpyDeviceToHost);
-            cudaMemcpy(host_buf, pboPtr, 10, cudaMemcpyDeviceToHost);
+            CUDA_SAFE_CALL(cudaMemcpy(dbg_val_receiver, d_matrix, 10, cudaMemcpyDeviceToHost));
+            CUDA_SAFE_CALL(cudaMemcpy(host_buf, pboPtr, 10, cudaMemcpyDeviceToHost));
             for (int i = 0; i < 3; ++i) {
                 std::cout << "RECEIVER - pboPtr[" << i << "] = " << (int)host_buf[i] << "; d_matrix[" << i << "] = " 
                         << (int)dbg_val_receiver[i] << std::endl;

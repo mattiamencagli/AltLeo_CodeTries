@@ -53,7 +53,7 @@ public slots:
 
         #ifdef DEBUG
             unsigned char* h_debug = new unsigned char[10];
-            cudaMemcpy(h_debug, d_working, 10, cudaMemcpyDeviceToHost);
+            CUDA_SAFE_CALL(cudaMemcpy(h_debug, d_working, 10, cudaMemcpyDeviceToHost));
             for (int i = 0; i < 3; ++i) {
                 std::cout << "SENDER - h_debug[" << i << "] = " << (int)h_debug[i] << std::endl;
             }
