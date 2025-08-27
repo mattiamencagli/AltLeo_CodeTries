@@ -10,11 +10,7 @@ class Renderer : public QOpenGLWidget, protected QOpenGLFunctions {
 public:
     void setCudaPointer(unsigned char* ptr) {d_matrix = ptr;}
 
-    void triggerUpdate() { 
-        update();
-        // QCoreApplication::processEvents();  // update a volte può rimanere appesto, così Forzo l'elaborazione immediata degli eventi
-        // repaint();  // Forza immediatamente paintGL()
-     }
+    void triggerUpdate() { update(); }
 
 protected:
     void initializeGL() override {
@@ -26,11 +22,19 @@ protected:
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
         glBufferData(GL_PIXEL_UNPACK_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+        // Registra il buffer con CUDA
+        CUDA_SAFE_CALL(cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard));
+
+        // Crea una texture per visualizzare i dati dal PBO
+        glGenTextures(1, &texId);
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, WIDTH, HEIGHT, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        // Stampa GPU info
         std::cout << "OpenGL Context Info: " << glGetString(GL_VERSION) << ", " << glGetString(GL_VENDOR) 
                   << ", " << glGetString(GL_RENDERER) << std::endl;
-
-        // Registra il buffer con CUDA
-        CUDA_SAFE_CALL(cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsReadOnly));
     }
 
     void paintGL() override {
@@ -43,7 +47,7 @@ protected:
         CUDA_SAFE_CALL(cudaGraphicsResourceGetMappedPointer((void**)&pboPtr, &size_rcv, cudaPboResource));
         if (size != size_rcv){
             std::cerr << "Different sizes.\n";
-            exit;
+            return;
         }
 
         // Copia da handle IPC al buffer OpenGL
@@ -65,8 +69,23 @@ protected:
 
         // Rendering da PBO
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-        glDrawPixels(WIDTH, HEIGHT, GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_LUMINANCE, GL_UNSIGNED_BYTE, nullptr);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+        // draw full-screen quad con la texture
+        glEnable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, 0); glVertex2f(-1, -1);
+        glTexCoord2f(1, 0); glVertex2f(1, -1);
+        glTexCoord2f(1, 1); glVertex2f(1, 1);
+        glTexCoord2f(0, 1); glVertex2f(-1, 1);
+        glEnd();
+
+        GLenum err = glGetError();
+        if (err != GL_NO_ERROR) {
+            std::cerr << "OpenGL error: " << err << std::endl;
+        }
 
     }
 
@@ -84,6 +103,9 @@ protected:
         if (pbo) {
             glDeleteBuffers(1, &pbo);
         }
+        if (texId) {
+            glDeleteTextures(1, &texId);
+        }
 
         QOpenGLWidget::closeEvent(event);
         QCoreApplication::quit();
@@ -93,6 +115,7 @@ private:
     const size_t size = WIDTH * HEIGHT;
     unsigned char* d_matrix = nullptr;
     GLuint pbo = 0;
+    GLuint texId = 0;
     cudaGraphicsResource* cudaPboResource = nullptr;
 };
 

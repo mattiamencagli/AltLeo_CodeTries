@@ -9,6 +9,12 @@ if [ -e /tmp/cuda_ipc_server ]; then
     rm -f /tmp/cuda_ipc_server
 fi
 
+# Esci se non trovi tutti gli eseguibili
+if [[ ! -f ".sender.moc" || ! -f "receiver.x" || ! -f "sender.x" ]]; then
+    echo "Errore: uno o più file richiesti non sono stati trovati." >&2
+    exit 1
+fi
+
 # Avvia il lettore (OpenGL) in background
 echo "Avvio il receiver (OpenGL)..."
 ./receiver.x &
