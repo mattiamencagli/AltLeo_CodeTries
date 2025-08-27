@@ -18,7 +18,7 @@ fi
 # Avvia il lettore (OpenGL) in background
 echo "Avvio il receiver (OpenGL)..."
 if [ $1 = 'prof' ]; then
-    nsys profile --trace=cuda,opengl ./receiver.x &
+    nsys profile --trace=cuda,opengl -f true -o report_opengl_rcv ./receiver.x &
 else
     ./receiver.x &
 fi
@@ -31,7 +31,7 @@ sleep 1.0
 # Ora avvia il sender (CUDA)
 echo "Avvio il sender (CUDA)..."
 if [ $1 = 'prof' ]; then
-    nsys profile --trace=cuda,opengl ./sender.x
+    nsys profile --trace=cuda,opengl -f true -o report_cuda_send ./sender.x
 else
     ./sender.x
 fi
@@ -39,4 +39,4 @@ fi
 # Attendi che il lettore finisca
 wait $READER_PID
 
-echo "FINE senza errori."
+echo "~~~ The End ~~~"

@@ -32,6 +32,8 @@ protected:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+        GL_SAFE_CALL(glGetError());
+
         // Stampa GPU info
         std::cout << "OpenGL Context Info: " << glGetString(GL_VERSION) << ", " << glGetString(GL_VENDOR) 
                   << ", " << glGetString(GL_RENDERER) << std::endl;
@@ -55,10 +57,10 @@ protected:
         CUDA_SAFE_CALL(cudaGraphicsUnmapResources(1, &cudaPboResource, 0));
 
         #ifdef DEBUG
-            unsigned char* dbg_val_receiver = new unsigned char[10];
-            unsigned char* host_buf = new unsigned char[10];
-            CUDA_SAFE_CALL(cudaMemcpy(dbg_val_receiver, d_matrix, 10, cudaMemcpyDeviceToHost));
-            CUDA_SAFE_CALL(cudaMemcpy(host_buf, pboPtr, 10, cudaMemcpyDeviceToHost));
+            unsigned char* dbg_val_receiver = new unsigned char[3];
+            unsigned char* host_buf = new unsigned char[3];
+            CUDA_SAFE_CALL(cudaMemcpy(dbg_val_receiver, d_matrix, 3, cudaMemcpyDeviceToHost));
+            CUDA_SAFE_CALL(cudaMemcpy(host_buf, pboPtr, 3, cudaMemcpyDeviceToHost));
             for (int i = 0; i < 3; ++i) {
                 std::cout << "RECEIVER - pboPtr[" << i << "] = " << (int)host_buf[i] << "; d_matrix[" << i << "] = " 
                         << (int)dbg_val_receiver[i] << std::endl;
@@ -77,15 +79,12 @@ protected:
         glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
         glTexCoord2f(0, 0); glVertex2f(-1, -1);
-        glTexCoord2f(1, 0); glVertex2f( 1, -1);
-        glTexCoord2f(1, 1); glVertex2f( 1,  1);
-        glTexCoord2f(0, 1); glVertex2f(-1,  1);
+        glTexCoord2f(1, 0); glVertex2f(+1, -1);
+        glTexCoord2f(1, 1); glVertex2f(+1, +1);
+        glTexCoord2f(0, 1); glVertex2f(-1, +1);
         glEnd();
 
-        GLenum err = glGetError();
-        if (err != GL_NO_ERROR) {
-            std::cerr << "OpenGL error: " << err << std::endl;
-        }
+        GL_SAFE_CALL(glGetError());
 
     }
 
