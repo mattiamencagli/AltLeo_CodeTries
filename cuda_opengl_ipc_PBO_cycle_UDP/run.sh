@@ -17,7 +17,11 @@ fi
 
 # Avvia il lettore (OpenGL) in background
 echo "Avvio il receiver (OpenGL)..."
-./receiver.x &
+if [ $1 = 'prof' ]; then
+    nsys profile --trace=cuda,opengl ./receiver.x &
+else
+    ./receiver.x &
+fi
 READER_PID=$!
 
 # Aspetta un attimo che il server Qt sia pronto
@@ -26,7 +30,11 @@ sleep 1.0
 
 # Ora avvia il sender (CUDA)
 echo "Avvio il sender (CUDA)..."
-./sender.x
+if [ $1 = 'prof' ]; then
+    nsys profile --trace=cuda,opengl ./sender.x
+else
+    ./sender.x
+fi
 
 # Attendi che il lettore finisca
 wait $READER_PID

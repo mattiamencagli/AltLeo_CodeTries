@@ -27,7 +27,7 @@ __global__ void fill_matrix_spiral(unsigned char* data, int width, int height, i
         float theta = atan2f(dy, dx);
         float t = frame * 0.2f;
         // float spiral = sinf(r * 0.05f + theta - t);
-        float spiral = sinf( 5.0f * logf(r + 1e-6f) + theta - t);
+        float spiral = sinf( 10.0f * logf(r + 1e-6f) + theta - t);
         int val = int((spiral + 1.0f) * 0.5f * 255.0f);
         data[idx] = (unsigned char)(val % 256);
     }
