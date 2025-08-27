@@ -5,12 +5,31 @@
 
 #include "global_include.h"
 
-__global__ void fill_matrix(unsigned char* data, int width, int height, int frame, int speed) {
+__global__ void fill_matrix_linear(unsigned char* data, int width, int height, int frame) {
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x < width && y < height) {
         int idx = y * width + x;
-        data[idx] = (x + y + frame*speed) % 256;
+        data[idx] = (x + y + frame) % 256;
+    }
+}
+
+__global__ void fill_matrix_spiral(unsigned char* data, int width, int height, int frame) {
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+    if (x < width && y < height) {
+        int idx = y * width + x;
+        float cx = width * 0.5f;
+        float cy = height * 0.5f;
+        float dx = x - cx;
+        float dy = y - cy;
+        float r = sqrtf(dx * dx + dy * dy);
+        float theta = atan2f(dy, dx);
+        float t = frame * 0.2f;
+        // float spiral = sinf(r * 0.05f + theta - t);
+        float spiral = sinf( 5.0f * logf(r + 1e-6f) + theta - t);
+        int val = int((spiral + 1.0f) * 0.5f * 255.0f);
+        data[idx] = (unsigned char)(val % 256);
     }
 }
 
@@ -47,7 +66,7 @@ public slots:
 
         dim3 block(16, 16);
         dim3 grid((WIDTH + block.x - 1) / block.x, (HEIGHT + block.y - 1) / block.y);
-        fill_matrix<<<grid, block>>>(d_working, WIDTH, HEIGHT, frame, 4);
+        fill_matrix_spiral<<<grid, block>>>(d_working, WIDTH, HEIGHT, frame);
         CUDA_SAFE_CALL(cudaGetLastError());
         CUDA_SAFE_CALL(cudaDeviceSynchronize());
 

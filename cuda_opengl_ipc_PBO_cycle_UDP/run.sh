@@ -31,4 +31,4 @@ echo "Avvio il sender (CUDA)..."
 # Attendi che il lettore finisca
 wait $READER_PID
 
-echo "FINE."
+echo "FINE senza errori."
