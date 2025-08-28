@@ -1,0 +1,11 @@
+# attiva
+sudo nvidia-cuda-mps-control -d
+
+# facoltativo: setta max usage per proces
+export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=80
+
+# adesso runna quel che vuoi, usera MPS
+
+# chiudi MPS
+echo quit | sudo nvidia-cuda-mps-control
+
