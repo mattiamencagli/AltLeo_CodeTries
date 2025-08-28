@@ -19,6 +19,9 @@ protected:
     void initializeGL() override {
         initializeOpenGLFunctions();
         glClearColor(0, 0, 0, 1);
+        // Stampa GPU info
+        std::cout << "OpenGL Context Info: " << glGetString(GL_VERSION) << ", " << glGetString(GL_VENDOR) 
+                  << ", " << glGetString(GL_RENDERER) << std::endl;
     }
 
     void paintGL() override {
