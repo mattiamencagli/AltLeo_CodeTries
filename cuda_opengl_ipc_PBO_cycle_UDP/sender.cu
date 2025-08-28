@@ -40,7 +40,7 @@ __global__ void fill_matrix_mandelbrot(unsigned char* data, int width, int heigh
         int idx = y * width + x;
 
         double scale = baseScale * powf(0.99f, frame);
-        int maxIter = 200 + (int)(100 * log2f(1.0f / scale));
+        // int maxIter = 200 + (int)(100 * log2f(1.0f / scale));
         int maxIter = 1000; 
 
         // Normalizza le coordinate pixel -> piano complesso
