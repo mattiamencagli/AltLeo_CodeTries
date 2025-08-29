@@ -79,15 +79,11 @@ __global__ void fill_matrix_mandelbrot_rgba(unsigned char* data, int width, int 
     int x = blockIdx.x * blockDim.x + threadIdx.x;
     int y = blockIdx.y * blockDim.y + threadIdx.y;
     if (x < width && y < height) {
-
         int idx = (y * width + x) * 4;
-
         double scale = baseScale * powf(0.99f, frame);
         int maxIter = 2000;
-
         float jx = cX + (x - width/2.0f) * scale;
         float jy = cY + (y - height/2.0f) * scale;
-
         float zx = 0, zy = 0;
         int iter = 0;
         while(zx*zx + zy*zy < 4.0f && iter < maxIter){
@@ -96,7 +92,6 @@ __global__ void fill_matrix_mandelbrot_rgba(unsigned char* data, int width, int 
             zx = tmp;
             iter++;
         }
-
         // Normalizza iter in [0,255]
         unsigned char colorIdx = (unsigned char)((iter * 255) / maxIter);
         // Applica palette fissa
