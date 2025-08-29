@@ -1,11 +1,22 @@
 # attiva
+sudo nvidia-smi -pm 1
 sudo nvidia-cuda-mps-control -d
 
 # facoltativo: setta max usage per proces
 export CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=80
 
+# controlla che vada (questo lo vedi solo se hai un processo cuda che gira)
+nvidia-smi
+# Cerca una riga come:
+| MPS daemon process: Yes
+#oppure 
+ps aux | grep mps
+#Dovresti vedere un processo nvidia-cuda-mps-server in esecuzione se hai un processo cuda che va.
+#Sennò vedi solo il processo: nvidia-cuda-mps-control -d.
+
 # adesso runna quel che vuoi, usera MPS
 
 # chiudi MPS
 echo quit | sudo nvidia-cuda-mps-control
+sudo nvidia-smi -pm 0
 

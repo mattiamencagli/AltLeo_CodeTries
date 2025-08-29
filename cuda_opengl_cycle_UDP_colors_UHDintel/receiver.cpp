@@ -88,8 +88,8 @@ protected:
         glTexCoord2f(0.f, 1.f); glVertex2f(-1.f, +1.f);
         glEnd();
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glDisable(GL_TEXTURE_2D);
+        // glBindTexture(GL_TEXTURE_2D, 0);
+        // glDisable(GL_TEXTURE_2D);
 
         GL_SAFE_CALL(glGetError());
     }
